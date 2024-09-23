@@ -15,15 +15,15 @@
 - name: Add containerd YUM repository
   yum_repository:
     name: containerd
-    description: Containerd repository
-    baseurl: https://rpm.packager.io/gh/containerd/containerd/rpm/centos/7/$basearch/
-    enabled: yes
+    description: Containerd Repository
+    baseurl: https://download.docker.com/linux/static/stable/x86_64/
     gpgcheck: yes
-    gpgkey: https://rpm.packager.io/gh/containerd/containerd/rpm/centos/7/$basearch/RPM-GPG-KEY-containerd
+    gpgkey: https://download.docker.com/linux/centos/gpg
+    enabled: yes
 
 - name: Install containerd
   yum:
-    name: containerd
+    name: containerd.io
     state: present
     update_cache: yes
 
