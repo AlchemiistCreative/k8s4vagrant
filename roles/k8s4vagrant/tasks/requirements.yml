@@ -1,4 +1,7 @@
 ---
+- name: Clear YUM cache
+  command: yum clean all
+
 - name: Install dependencies
   yum:
     name:
