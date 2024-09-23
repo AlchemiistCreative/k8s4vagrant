@@ -8,8 +8,22 @@
       - yum-utils
       - ca-certificates
       - curl
-      - containerd  # Add containerd as a dependency
-      - socat        # Install socat if needed
+      - socat  # Install socat if needed
+    state: present
+    update_cache: yes
+
+- name: Add containerd YUM repository
+  yum_repository:
+    name: containerd
+    description: Containerd repository
+    baseurl: https://rpm.packager.io/gh/containerd/containerd/rpm/centos/7/$basearch/
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: https://rpm.packager.io/gh/containerd/containerd/rpm/centos/7/$basearch/RPM-GPG-KEY-containerd
+
+- name: Install containerd
+  yum:
+    name: containerd
     state: present
     update_cache: yes
 
