@@ -1,0 +1,56 @@
+---
+
+- name: Install dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+    update_cache: yes
+
+- name: Add Kubernetes GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes APT repository
+  apt_repository:
+    repo: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+
+- name: Install Kubernetes packages
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    update_cache: yes
+
+- name: Hold Kubernetes packages at current version
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    force: yes
+    mark: hold
+
+- name: Disable swap (required for Kubernetes)
+  command: swapoff -a
+  when: ansible_virtualization_role == "guest"
+
+- name: Initialize Kubernetes cluster on master
+  command: kubeadm init
+  when: inventory_hostname == "kubemaster"
+
+- name: Set up kubeconfig for vagrant user
+  become: true
+  shell: |
+    mkdir -p /home/vagrant/.kube
+    cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+    chown vagrant:vagrant /home/vagrant/.kube/config
+  when: inventory_hostname == "kubemaster"
