@@ -49,13 +49,13 @@
 
 - name: Open required firewall ports
   firewalld:
-    service: "{{ item }}"
+    port: "{{ item }}"
     permanent: yes
     state: enabled
   loop:
-    - kubernetes
     - "6443/tcp"
     - "10250/tcp"
+
 
 - name: Add Kubernetes YUM repository
   yum_repository:
