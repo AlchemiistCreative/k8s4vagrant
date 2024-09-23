@@ -29,10 +29,6 @@
     state: present
     update_cache: yes
 
-- name: Hold Kubernetes packages at current version
-  command: yum versionlock kubelet kubeadm kubectl
-  become: yes
-
 - name: Enable and start kubelet service
   systemd:
     name: kubelet
