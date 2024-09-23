@@ -1,27 +1,24 @@
 ---
-
 - name: Install dependencies
-  apt:
+  yum:
     name:
-      - apt-transport-https
+      - yum-utils
       - ca-certificates
       - curl
-      - software-properties-common
     state: present
     update_cache: yes
 
-- name: Add Kubernetes GPG key
-  apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-    state: present
-
-- name: Add Kubernetes APT repository
-  apt_repository:
-    repo: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
-    state: present
+- name: Add Kubernetes YUM repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 
 - name: Install Kubernetes packages
-  apt:
+  yum:
     name:
       - kubelet
       - kubeadm
@@ -30,14 +27,14 @@
     update_cache: yes
 
 - name: Hold Kubernetes packages at current version
-  apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: present
-    force: yes
-    mark: hold
+  command: yum versionlock kubelet kubeadm kubectl
+  become: yes
+
+- name: Enable and start kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes
+    state: started
 
 - name: Disable swap (required for Kubernetes)
   command: swapoff -a
