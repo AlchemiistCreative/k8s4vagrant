@@ -56,7 +56,6 @@
     - kubernetes
     - "6443/tcp"
     - "10250/tcp"
-  when: ansible_facts['firewalld']['active'] | bool
 
 - name: Add Kubernetes YUM repository
   yum_repository:
