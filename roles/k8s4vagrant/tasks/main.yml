@@ -2,3 +2,6 @@
 # tasks file for k8s4vagrant
 - name: requirements
   include_tasks: requirements.yml
+
+- name: setup
+  include_tasks: kube-setup.yml

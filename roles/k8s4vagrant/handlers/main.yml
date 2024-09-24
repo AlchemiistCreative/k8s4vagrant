@@ -1,2 +1,6 @@
 ---
 # handlers file for k8s4vagrant
+- name: Restart containerd
+  systemd:
+    name: containerd
+    state: restarted

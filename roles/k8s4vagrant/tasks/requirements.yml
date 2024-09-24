@@ -12,26 +12,6 @@
     state: present
     update_cache: yes
 
-- name: Add Docker repository
-  yum_repository:
-    name: docker-ce
-    description: Docker Community Edition
-    baseurl: https://download.docker.com/linux/centos/9/x86_64/stable/
-    gpgcheck: yes
-    gpgkey: https://download.docker.com/linux/centos/gpg
-    enabled: yes
-
-- name: Install containerd
-  yum:
-    name: containerd.io
-    state: present
-    update_cache: yes
-
-- name: Enable and start containerd service
-  systemd:
-    name: containerd
-    enabled: yes
-    state: started
 
 - name: Enable IP forwarding
   command: sysctl -w net.ipv4.ip_forward=1
@@ -59,15 +39,6 @@
 
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
-
-- name: Add Kubernetes YUM repository
-  yum_repository:
-    name: kubernetes
-    description: Kubernetes repository
-    baseurl: https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
-    gpgcheck: yes
-    enabled: yes
-    gpgkey: https://pkgs.k8s.io/core:/stable:/v1.29/rpm/repodata/repomd.xml.key
 
 
 - name: Load overlay module
@@ -133,20 +104,31 @@
   command: swapoff -a
   become: true
 
-- name: Enable and start kubelet service
+- name: Add Docker repository
+  yum_repository:
+    name: docker-ce
+    description: Docker Community Edition
+    baseurl: https://download.docker.com/linux/centos/9/x86_64/stable/
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/centos/gpg
+    enabled: yes
+
+- name: Install containerd
+  yum:
+    name: containerd.io
+    state: present
+    update_cache: yes
+
+- name: Configure containerd to enable CRI plugin
+  lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^disabled_plugins'
+    line: 'disabled_plugins = []'  # Ensures the CRI plugin is not disabled
+  notify: Restart containerd
+
+- name: Ensure containerd service is started
   systemd:
-    name: kubelet
+    name: containerd
     enabled: yes
     state: started
 
-- name: Initialize Kubernetes cluster on master
-  command: kubeadm init
-  when: inventory_hostname == "kubemaster"
-
-- name: Set up kubeconfig for vagrant user
-  become: true
-  shell: |
-    mkdir -p /home/vagrant/.kube
-    cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
-    chown vagrant:vagrant /home/vagrant/.kube/config
-  when: inventory_hostname == "kubemaster"
