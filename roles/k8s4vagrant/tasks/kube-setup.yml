@@ -40,14 +40,16 @@
     chown vagrant:vagrant /home/vagrant/.kube/config
   when: inventory_hostname == "kubemaster" and kube_cluster_info.rc != 0
 
-
 - name: Retrieve the join command for worker nodes
   command: kubeadm token create --print-join-command
   when: inventory_hostname == "kubemaster"
   register: join_command
 
+- name: Set the join command as a fact
+  set_fact:
+    worker_join_command: "{{ join_command.stdout }}"
+  when: inventory_hostname == "kubemaster"
+
 - name: Join worker nodes to the Kubernetes cluster
-  command: "{{ join_command.stdout }}"
+  command: "{{ worker_join_command }}"
   when: inventory_hostname != "kubemaster"
-
-
