@@ -81,15 +81,6 @@
     state: present
     reload: yes
 
-- name: Install Kubernetes packages
-  yum:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    state: present
-    update_cache: yes
-
 - name: Disable swap
   command: swapoff -a
   become: true
