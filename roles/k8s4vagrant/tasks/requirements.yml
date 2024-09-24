@@ -119,25 +119,26 @@
     state: present
     update_cache: yes
 
+- name: Disable swap
+  command: swapoff -a
+  become: true
+
+- name: Remove swap entry from fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^/swap'  # Adjust this regex to match your swap entry
+    state: absent
+
+- name: Ensure swap is off
+  command: swapoff -a
+  become: true
+
 - name: Enable and start kubelet service
   systemd:
     name: kubelet
     enabled: yes
     state: started
-
-- name: Disable swap
-  command: swapoff -a
-
-- name: Remove swap entry from fstab
-  lineinfile:
-    path: /etc/fstab
-    regexp: '^/swapfile'  # Adjust this regex to match your swap entry
-    state: absent
-
-- name: Ensure swap is off
-  command: swapoff -a
-
-
+    
 - name: Initialize Kubernetes cluster on master
   command: kubeadm init
   when: inventory_hostname == "kubemaster"
