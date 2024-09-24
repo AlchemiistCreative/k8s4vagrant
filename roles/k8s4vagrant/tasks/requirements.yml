@@ -55,7 +55,7 @@
   loop:
     - "6443/tcp"
     - "10250/tcp"
-    
+
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
 
@@ -67,6 +67,47 @@
     enabled: yes
     gpgcheck: yes
     gpgkey: https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key
+
+
+- name: Load overlay module
+  ansible.builtin.shell: modprobe overlay
+  become: true
+  ignore_errors: true
+
+- name: Load br_netfilter module
+  ansible.builtin.shell: modprobe br_netfilter
+  become: true
+  ignore_errors: true
+
+- name: Ensure overlay module is loaded on boot
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s-modules.conf
+    content: |
+      overlay
+      br_netfilter
+  become: true
+
+- name: Configure sysctl for Kubernetes
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/k8s.conf
+    content: |
+      net.bridge.bridge-nf-call-iptables = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+  become: true
+
+- name: Apply sysctl settings
+  ansible.builtin.sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: 1
+    state: present
+    reload: yes
+
+- name: Apply sysctl settings
+  ansible.builtin.sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: 1
+    state: present
+    reload: yes
 
 - name: Install Kubernetes packages
   yum:
