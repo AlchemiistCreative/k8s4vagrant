@@ -1,4 +1,3 @@
----
 - name: Clear YUM cache
   command: yum clean all
 
@@ -67,8 +66,7 @@
     baseurl: https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
     enabled: yes
     gpgcheck: yes
-    gpgkey: https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key
-
+    gpgkey: https://pkgs.k8s.io/core:/stable:/v130/rpm/repodata/repomd.xml.key
 
 - name: Load overlay module
   ansible.builtin.shell: modprobe overlay
@@ -121,7 +119,6 @@
 
 - name: Disable swap
   command: swapoff -a
-  become: true
 
 - name: Remove swap entry from fstab
   lineinfile:
@@ -131,14 +128,13 @@
 
 - name: Ensure swap is off
   command: swapoff -a
-  become: true
 
 - name: Enable and start kubelet service
   systemd:
     name: kubelet
     enabled: yes
     state: started
-    
+
 - name: Initialize Kubernetes cluster on master
   command: kubeadm init
   when: inventory_hostname == "kubemaster"
@@ -149,4 +145,10 @@
     mkdir -p /home/vagrant/.kube
     cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
     chown vagrant:vagrant /home/vagrant/.kube/config
+  when: inventory_hostname == "kubemaster"
+
+- name: Ensure the CA certificate is present
+  copy:
+    src: /etc/kubernetes/pki/ca.crt
+    dest: /etc/kubernetes/pki/ca.crt
   when: inventory_hostname == "kubemaster"
