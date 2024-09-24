@@ -15,16 +15,21 @@
       - kubectl
     state: present
     update_cache: yes
-    
+
 - name: Enable and start kubelet service
   systemd:
     name: kubelet
     enabled: yes
     state: started
 
+- name: Check if Kubernetes is already initialized
+  command: kubectl cluster-info
+  register: kube_cluster_info
+  ignore_errors: yes
+
 - name: Initialize Kubernetes cluster on master
   command: kubeadm init
-  when: inventory_hostname == "kubemaster"
+  when: inventory_hostname == "kubemaster" and kube_cluster_info.rc != 0
   register: kubeadm_init
 
 - name: Set up kubeconfig for vagrant user
@@ -33,7 +38,8 @@
     mkdir -p /home/vagrant/.kube
     cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
     chown vagrant:vagrant /home/vagrant/.kube/config
-  when: inventory_hostname == "kubemaster"
+  when: inventory_hostname == "kubemaster" and kube_cluster_info.rc != 0
+
 
 - name: Retrieve the join command for worker nodes
   command: kubeadm token create --print-join-command
