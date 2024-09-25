@@ -55,17 +55,21 @@
   when: inventory_hostname == "kubemaster" 
   register: join_command
 
+- name: Set join command fact
+  set_fact:
+    join_command_str: "{{ join_command.stdout }}"
+  when: inventory_hostname == "kubemaster"
+
 - name: Debug join command
   debug:
-    var: join_command
+    var: hostvars['kubemaster'].join_command_str
 
 - name: Debug join command
   ansible.builtin.debug:
     msg:
-    - "join command : {{ join_command.stdout }}"
+    - "join command : {{ hostvars['kubemaster'].join_command_str}}"
   when: inventory_hostname == "kubemaster"  
 
 - name: Join worker nodes to the Kubernetes cluster
-  shell: | 
-    "{{ join_command.stdout }}"
+  command: "{{ hostvars['kubemaster'].join_command_str }}"
   when: inventory_hostname != "kubemaster"
