@@ -36,7 +36,7 @@
 - name: Initialize Kubernetes if not already initialized
   command: kubeadm init
   when: inventory_hostname == "kubemaster" and 
-        not lock_file_stat.stat.exists  # Check if lock file does not exist
+        not lock_file_stat.stat.exists
   notify: lockfile
 
 - name: Set up kubeconfig for vagrant user
@@ -48,7 +48,7 @@
     cp -i /etc/kubernetes/admin.conf /root/.kube/config
     chown vagrant:vagrant /home/vagrant/.kube/config
   when: inventory_hostname == "kubemaster" and 
-        not lock_file_stat.stat.exists  # Check if lock file does not exist
+        not lock_file_stat.stat.exists
 
 - name: Retrieve the join command for worker nodes
   command: kubeadm token create --print-join-command
@@ -58,18 +58,10 @@
 - name: Set join command fact
   set_fact:
     join_command_str: "{{ join_command.stdout }}"
-  when: inventory_hostname == "kubemaster"
-
-- name: Debug join command
-  debug:
-    var: hostvars['kubemaster'].join_command_str
-
-- name: Debug join command
-  ansible.builtin.debug:
-    msg:
-    - "join command : {{ hostvars['kubemaster'].join_command_str}}"
-  when: inventory_hostname == "kubemaster"  
+  when: inventory_hostname == "kubemaster" and 
+        not lock_file_stat.stat.exists 
 
 - name: Join worker nodes to the Kubernetes cluster
   command: "{{ hostvars['kubemaster'].join_command_str }}"
-  when: inventory_hostname != "kubemaster"
+  when: inventory_hostname != "kubemaster" and 
+        not lock_file_stat.stat.exists 
