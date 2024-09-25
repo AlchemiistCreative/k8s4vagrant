@@ -1,6 +1,8 @@
----
 - name: Clear YUM cache
-  command: yum clean all
+  yum:
+    name: "*"
+    state: absent
+    update_cache: yes
 
 - name: Install dependencies
   yum:
@@ -8,24 +10,16 @@
       - yum-utils
       - ca-certificates
       - curl
-      - socat  # Install socat if needed
+      - socat
     state: present
     update_cache: yes
 
-
 - name: Enable IP forwarding
-  command: sysctl -w net.ipv4.ip_forward=1
-  register: ip_forward
-  changed_when: ip_forward.rc == 0
-
-- name: Make IP forwarding persistent
-  lineinfile:
-    path: /etc/sysctl.conf
-    line: "net.ipv4.ip_forward = 1"
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
     state: present
-
-- name: Reload sysctl settings
-  command: sysctl -p
+    reload: yes
 
 - name: Open required firewall ports
   firewalld:
@@ -40,7 +34,6 @@
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
 
-
 - name: Load overlay module
   ansible.builtin.shell: modprobe overlay
   become: true
@@ -51,7 +44,7 @@
   become: true
   ignore_errors: true
 
-- name: Ensure overlay module is loaded on boot
+- name: Ensure overlay and br_netfilter modules are loaded on boot
   ansible.builtin.copy:
     dest: /etc/modules-load.d/k8s-modules.conf
     content: |
@@ -59,27 +52,15 @@
       br_netfilter
   become: true
 
-- name: Configure sysctl for Kubernetes
-  ansible.builtin.copy:
-    dest: /etc/sysctl.d/k8s.conf
-    content: |
-      net.bridge.bridge-nf-call-iptables = 1
-      net.bridge.bridge-nf-call-ip6tables = 1
-  become: true
-
-- name: Apply sysctl settings
+- name: Apply sysctl settings for Kubernetes
   ansible.builtin.sysctl:
-    name: net.bridge.bridge-nf-call-iptables
+    name: "{{ item }}"
     value: 1
     state: present
     reload: yes
-
-- name: Apply sysctl settings
-  ansible.builtin.sysctl:
-    name: net.bridge.bridge-nf-call-ip6tables
-    value: 1
-    state: present
-    reload: yes
+  loop:
+    - net.bridge.bridge-nf-call-iptables
+    - net.bridge.bridge-nf-call-ip6tables
 
 - name: Disable swap
   command: swapoff -a
@@ -88,12 +69,8 @@
 - name: Remove swap entry from fstab
   lineinfile:
     path: /etc/fstab
-    regexp: '^/swap'  # Adjust this regex to match your swap entry
+    regexp: '^/swap'
     state: absent
-
-- name: Ensure swap is off
-  command: swapoff -a
-  become: true
 
 - name: Add Docker repository
   yum_repository:
@@ -114,7 +91,7 @@
   lineinfile:
     path: /etc/containerd/config.toml
     regexp: '^disabled_plugins'
-    line: '#disabled_plugins = []'  # Ensures the CRI plugin is not disabled
+    line: '#disabled_plugins = []'
   notify: Restart containerd
 
 - name: Ensure containerd service is started
