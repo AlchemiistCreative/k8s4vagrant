@@ -56,11 +56,24 @@
   command: "{{ hostvars['kubemaster'].join_command_str }}"
   when: inventory_hostname != "kubemaster" and not lock_file_stat.stat.exists
 
+- name: Ensure containerd CNI configuration exists in config.toml
+  lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^\s*\[plugins."io.containerd.grpc.v1.cri".cni\]'
+    line: |
+      [plugins."io.containerd.grpc.v1.cri".cni]
+        bin_dir = "/opt/cni/bin"
+        conf_dir = "/etc/cni/net.d"
+  state: present
+
 # Install Calico on all nodes
 - name: Install Calico CNI plugin
   become: true
   command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
+  notify:
+  - Restart containerd
+  - Restart kubelet
 
 # - name: Wait for Calico pods to be ready
 #   become: true
@@ -74,8 +87,3 @@
 #     - Restart containerd
 #     - Restart kubelet
 
-    
-- name: debug calico
-  debug:
-    msg: "{{ result }}"
-  when: inventory_hostname == "kubemaster"

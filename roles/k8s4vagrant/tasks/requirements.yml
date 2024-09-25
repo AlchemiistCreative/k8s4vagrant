@@ -122,4 +122,3 @@
     name: containerd
     enabled: yes
     state: started
-
