@@ -34,7 +34,7 @@
   when: "not lock_file_stat.stat.exists"
 
 - name: Initialize Kubernetes if not already initialized
-  command: kubeadm init
+  command: kubeadm init --pod-network-cidr 192.168.33.0/24
   when: inventory_hostname == "kubemaster" and 
         not lock_file_stat.stat.exists
   notify: lockfile
