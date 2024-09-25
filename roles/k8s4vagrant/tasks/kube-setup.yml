@@ -74,6 +74,8 @@
     - Restart containerd
     - Restart kubelet
 
-- name: debug calico 
-  msg: {{ result }}
+    
+- name: debug calico
+  debug:
+    msg: "{{ result }}"
   when: inventory_hostname == "kubemaster"
