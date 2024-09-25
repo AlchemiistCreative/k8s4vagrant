@@ -91,6 +91,14 @@
     line: '#disabled_plugins = []'
   notify: Restart containerd
 
+- name: Set SystemdCgroup to true in containerd config
+  lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^SystemdCgroup = false'
+    line: 'SystemdCgroup = true'
+    state: present
+
+  notify: Restart containerd
 - name: Ensure containerd service is started
   systemd:
     name: containerd

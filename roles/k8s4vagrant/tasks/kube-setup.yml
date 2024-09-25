@@ -40,6 +40,7 @@
   register: kubeadm_init
   notify: lockfile
 
+
 - name: Set up kubeconfig for vagrant user
   become: true
   shell: |
