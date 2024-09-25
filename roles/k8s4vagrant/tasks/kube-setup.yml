@@ -79,9 +79,7 @@
   become: true
   command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
-  notify:
-  - Restart containerd
-  - Restart kubelet
+
 
 # - name: Wait for Calico pods to be ready
 #   become: true
@@ -95,3 +93,13 @@
 #     - Restart containerd
 #     - Restart kubelet
 
+
+- name: Restart containerd
+  systemd:
+    name: containerd
+    state: restarted
+
+- name: Restart kubelet
+  systemd:
+    name: kubelet
+    state: restarted
