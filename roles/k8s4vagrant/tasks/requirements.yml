@@ -1,8 +1,5 @@
 - name: Clear YUM cache
-  yum:
-    name: "*"
-    state: absent
-    update_cache: yes
+  command: yum clean all
 
 - name: Install dependencies
   yum:
