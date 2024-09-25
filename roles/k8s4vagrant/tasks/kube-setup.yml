@@ -52,18 +52,19 @@
 
 - name: Retrieve the join command for worker nodes
   command: kubeadm token create --print-join-command
-  when: inventory_hostname == "kubemaster" and 
-        not lock_file_stat.stat.exists  # Check if lock file does not exist
+  when: inventory_hostname == "kubemaster" 
   register: join_command
+
+- name: Debug join command
+  debug:
+    var: join_command
 
 - name: Debug join command
   ansible.builtin.debug:
     msg:
     - "join command : {{ join_command.stdout }}"
-  when: inventory_hostname == "kubemaster" and 
-        not lock_file_stat.stat.exists  # Check if lock file does not exist
+  when: inventory_hostname == "kubemaster"  
 
 - name: Join worker nodes to the Kubernetes cluster
   command: "{{ join_command.stdout }}"
-  when: inventory_hostname != "kubemaster" and
-        not lock_file_stat.stat.exists 
+  when: inventory_hostname != "kubemaster"
