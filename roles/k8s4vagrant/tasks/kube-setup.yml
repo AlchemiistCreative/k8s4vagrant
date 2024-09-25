@@ -66,5 +66,6 @@
   when: inventory_hostname == "kubemaster"  
 
 - name: Join worker nodes to the Kubernetes cluster
-  command: "{{ join_command.stdout }}"
+  shell: | 
+    "{{ join_command.stdout }}"
   when: inventory_hostname != "kubemaster"
