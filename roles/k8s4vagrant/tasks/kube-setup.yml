@@ -22,11 +22,6 @@
     enabled: yes
     state: started
 
-- name: Check if Kubernetes is already initialized
-  command: kubectl cluster-info
-  register: kube_cluster_info
-  ignore_errors: true
-
 - name: Check if lock file exists
   stat:
     path: /tmp/kubeadm.lock
@@ -41,7 +36,6 @@
 - name: Initialize Kubernetes if not already initialized
   command: kubeadm init
   when: inventory_hostname == "kubemaster" and 
-        'master is running' not in kube_cluster_info.stdout and 
         not lock_file_stat.stat.exists  # Check if lock file does not exist
   notify: lockfile
 
@@ -60,11 +54,11 @@
   when: inventory_hostname == "kubemaster"
   register: join_command
 
-- name: Set the join command as a fact
-  set_fact:
-    worker_join_command: "{{ join_command.stdout }}"
-  when: inventory_hostname == "kubemaster"
+- name: Debug join command
+  ansible.builtin.debug:
+    msg:
+    - "join command : {{ join_command }}"
 
 - name: Join worker nodes to the Kubernetes cluster
-  command: "{{ worker_join_command }}"
+  command: "{{ join_command }}"
   when: inventory_hostname != "kubemaster"
