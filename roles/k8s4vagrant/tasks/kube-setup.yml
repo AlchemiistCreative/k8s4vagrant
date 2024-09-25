@@ -22,12 +22,10 @@
     enabled: yes
     state: started
 
-
 - name: Check if Kubernetes is already initialized
   command: kubectl cluster-info
   register: kube_cluster_info
   ignore_errors: true
-
 
 - name: Debug check if kube is init
   ansible.builtin.debug:
@@ -37,7 +35,10 @@
 
 - name: Initialize Kubernetes if not already initialized
   command: kubeadm init
-  when: inventory_hostname == "kubemaster" and 'master is running' not in kube_cluster_info.stdout and 'was refused' not in kube_cluster_info.stdout
+  when: inventory_hostname == "kubemaster" and 
+        'master is running' not in kube_cluster_info.stdout and 
+        not (lookup('file', '/tmp/kubeadm.lock') is defined)
+  notify: lockfile
 
 - name: Set up kubeconfig for vagrant user
   become: true
