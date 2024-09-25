@@ -37,7 +37,7 @@
 
 - name: Initialize Kubernetes if not already initialized
   command: kubeadm init
-  when: inventory_hostname == "kubemaster" and 'master is running' not in kube_cluster_info.stdout
+  when: inventory_hostname == "kubemaster" and 'master is running' not in kube_cluster_info.stdout and 'was refused' not in kube_cluster_info.stdout
 
 - name: Set up kubeconfig for vagrant user
   become: true
