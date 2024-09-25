@@ -36,7 +36,7 @@
   ansible.builtin.debug:
     msg:
     - "not running"
-  when: "'master is running' not in kube_cluster_info.stdout"
+  when: "not lock_file_stat.stat.exists"
 
 - name: Initialize Kubernetes if not already initialized
   command: kubeadm init
