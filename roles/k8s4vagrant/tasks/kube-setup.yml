@@ -27,16 +27,9 @@
     path: /tmp/kubeadm.lock
   register: lock_file_stat
 
-- name: Debug check if kube is init
-  ansible.builtin.debug:
-    msg:
-    - "not running"
-  when: "not lock_file_stat.stat.exists"
-
 - name: Initialize Kubernetes if not already initialized
-  command: kubeadm init --pod-network-cidr="10.244.0.0/16"
-  when: inventory_hostname == "kubemaster" and 
-        not lock_file_stat.stat.exists
+  command: kubeadm init
+  when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
   notify: lockfile
 
 - name: Set up kubeconfig for vagrant user
@@ -47,21 +40,32 @@
     cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
     cp -i /etc/kubernetes/admin.conf /root/.kube/config
     chown vagrant:vagrant /home/vagrant/.kube/config
-  when: inventory_hostname == "kubemaster" and 
-        not lock_file_stat.stat.exists
+  when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
 - name: Retrieve the join command for worker nodes
   command: kubeadm token create --print-join-command
-  when: inventory_hostname == "kubemaster" 
+  when: inventory_hostname == "kubemaster"
   register: join_command
 
 - name: Set join command fact
   set_fact:
     join_command_str: "{{ join_command.stdout }}"
-  when: inventory_hostname == "kubemaster" and 
-        not lock_file_stat.stat.exists 
+  when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
 - name: Join worker nodes to the Kubernetes cluster
   command: "{{ hostvars['kubemaster'].join_command_str }}"
-  when: inventory_hostname != "kubemaster" and 
-        not lock_file_stat.stat.exists 
+  when: inventory_hostname != "kubemaster" and not lock_file_stat.stat.exists
+
+# Install Calico on all nodes
+- name: Install Calico CNI plugin
+  become: true
+  command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
+
+- name: Wait for Calico pods to be ready
+  become: true
+  command: kubectl rollout status daemonset/calico-node -n kube-system
+  when: inventory_hostname == "kubemaster"
+  notify:
+    - Restart containerd
+    - Restart kubelet 

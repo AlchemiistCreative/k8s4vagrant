@@ -9,3 +9,8 @@
   file:
     path: /tmp/kubeadm.lock
     state: touch
+
+- name: Restart kubelet
+  systemd:
+    name: kubelet
+    state: restarted
