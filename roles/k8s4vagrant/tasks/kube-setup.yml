@@ -62,17 +62,17 @@
   command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
-- name: Wait for Calico pods to be ready
-  become: true
-  command: kubectl rollout status daemonset/calico-node -n kube-system
-  when: inventory_hostname == "kubemaster"
-  retries: 5
-  delay: 30
-  until: result.rc == 0
-  register: result
-  notify:
-    - Restart containerd
-    - Restart kubelet
+# - name: Wait for Calico pods to be ready
+#   become: true
+#   command: kubectl rollout status daemonset/calico-node -n kube-system
+#   when: inventory_hostname == "kubemaster"
+#   retries: 5
+#   delay: 30
+#   until: result.rc == 0
+#   register: result
+#   notify:
+#     - Restart containerd
+#     - Restart kubelet
 
     
 - name: debug calico
