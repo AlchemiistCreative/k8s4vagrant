@@ -28,6 +28,12 @@
   register: kube_cluster_info
   ignore_errors: true
 
+
+- name: Debug check if kube is init
+  ansible.builtin.debug:
+    msg:
+    - "kube already init?: {{ kube_cluster_info.rc }}"
+
 - name: Initialize Kubernetes if not already initialized
   command: kubeadm init
   when: inventory_hostname == "kubemaster" and kube_cluster_info.rc != 0  # Only run this if the previous command failed
