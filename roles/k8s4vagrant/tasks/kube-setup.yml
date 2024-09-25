@@ -32,7 +32,8 @@
 - name: Debug check if kube is init
   ansible.builtin.debug:
     msg:
-    - "kube already init?: {{ kube_cluster_info.rc }}"
+    - "not running"
+  when: "'master is running' not in kube_cluster_info.stdout"
 
 - name: Initialize Kubernetes if not already initialized
   command: kubeadm init
