@@ -27,6 +27,11 @@
   register: kube_cluster_info
   ignore_errors: true
 
+- name: Check if lock file exists
+  stat:
+    path: /tmp/kubeadm.lock
+  register: lock_file_stat
+
 - name: Debug check if kube is init
   ansible.builtin.debug:
     msg:
@@ -37,8 +42,8 @@
   command: kubeadm init
   when: inventory_hostname == "kubemaster" and 
         'master is running' not in kube_cluster_info.stdout and 
-        not (lookup('file', '/tmp/kubeadm.lock') is defined)
-  notify: lockfile
+        not lock_file_stat.stat.exists  # Check if lock file does not exist
+  notify: Create lock file
 
 - name: Set up kubeconfig for vagrant user
   become: true
