@@ -28,9 +28,16 @@
     path: /tmp/kubeadm.lock
   register: lock_file_stat
 
-- name: Initialize Kubernetes if not already initialized
-  command: kubeadm init --pod-network-cidr=10.10.0.0/16
+- name: Get correct IP address (on the desired NIC)
+  shell: ip -o -4 addr show dev eth1 | awk '{print $4}' | cut -d/ -f1
+  register: correct_ip
+  when: inventory_hostname == "kubemaster"
+
+- name: Initialize Kubernetes with correct network interface
+  become: true
+  command: kubeadm init --apiserver-advertise-address={{ correct_ip.stdout }} --pod-network-cidr=192.168.0.0/16
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
+  register: kubeadm_init
   notify: lockfile
 
 - name: Set up kubeconfig for vagrant user
