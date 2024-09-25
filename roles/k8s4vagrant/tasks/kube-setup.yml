@@ -22,15 +22,15 @@
     enabled: yes
     state: started
 
+
 - name: Check if Kubernetes is already initialized
   command: kubectl cluster-info
   register: kube_cluster_info
-  ignore_errors: yes
+  ignore_errors: true
 
-- name: Initialize Kubernetes cluster on master
+- name: Initialize Kubernetes if not already initialized
   command: kubeadm init
-  when: inventory_hostname == "kubemaster" and kube_cluster_info.rc != 0
-  register: kubeadm_init
+  when: inventory_hostname == "kubemaster" and kube_cluster_info.rc != 0  # Only run this if the previous command failed
 
 - name: Set up kubeconfig for vagrant user
   become: true

@@ -1,10 +1,6 @@
 ---
 # handlers file for k8s4vagrant
 - name: Restart containerd
-  debug:
-    msg: "Handler: Restarting containerd service..."
-    
-- name: Restart containerd
   systemd:
     name: containerd
     state: restarted
