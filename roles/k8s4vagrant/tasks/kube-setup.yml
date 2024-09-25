@@ -58,8 +58,8 @@
 - name: Debug join command
   ansible.builtin.debug:
     msg:
-    - "join command : {{ join_command }}"
+    - "join command : {{ join_command.stdout }}"
 
 - name: Join worker nodes to the Kubernetes cluster
-  command: "{{ join_command }}"
+  command: "{{ join_command.stdout }}"
   when: inventory_hostname != "kubemaster"
