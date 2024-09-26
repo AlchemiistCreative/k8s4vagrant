@@ -102,13 +102,7 @@
 #   notify: Restart containerd
 
 - name: get config.toml
-  command: containerd config default > /tmp/config.toml
-
-- name: move config.toml
-  copy:
-    src: /tmp/config.toml
-    dest: /etc/containerd/config.toml
-    mode: '0644'
+  command: containerd config default > /etc/containerd/config.toml
 
 - name: Set SystemdCgroup to true in containerd config
   lineinfile:
