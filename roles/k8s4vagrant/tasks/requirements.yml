@@ -23,15 +23,20 @@
     state: present
     reload: yes
 
-- name: Open required firewall ports
+- name: FirewallD rules
   firewalld:
-    port: "{{ item }}"
     permanent: yes
-    state: enabled
-  loop:
-    - "6443/tcp"
-    - "10250/tcp"
-    - "8080/tcp"
+    immediate: yes
+    port: "{{item.port}}/{{item.proto}}"
+    state: "{{item.state}}"
+    zone: "{{item.zone}}"
+  with_items:
+   - {port: "6443", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "2379-2380", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "10250", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "10259", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "10257", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "30000-32767", proto: "tcp", state: "enabled", zone: "public" }
 
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
