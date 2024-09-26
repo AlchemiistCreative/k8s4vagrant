@@ -101,15 +101,11 @@
 #     line: '#disabled_plugins = []'
 #   notify: Restart containerd
 
-- name: get config.toml
-  command: containerd config default > /etc/containerd/config.toml
-
-- name: Set SystemdCgroup to true in containerd config
-  lineinfile:
-    path: /etc/containerd/config.toml
-    regexp: '^SystemdCgroup = false'
-    line: 'SystemdCgroup = true'
-    state: present
+- name: Setup containerd
+  shell:
+    cmd: |
+      containerd config default > /etc/containerd/config.toml
+      sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 
   notify: Restart containerd
 - name: Ensure containerd service is started
