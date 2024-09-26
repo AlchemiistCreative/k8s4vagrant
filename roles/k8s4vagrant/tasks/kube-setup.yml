@@ -1,4 +1,3 @@
-
 - name: Add Kubernetes YUM repository
   yum_repository:
     name: kubernetes
@@ -35,11 +34,10 @@
 
 - name: Initialize Kubernetes with correct network interface
   become: true
-  command: kubeadm init --apiserver-advertise-address={{ correct_ip.stdout }} --pod-network-cidr=192.168.0.0/16
+  command: kubeadm init --apiserver-advertise-address={{ correct_ip.stdout }} --pod-network-cidr=10.244.0.0/16
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
   register: kubeadm_init
   notify: lockfile
-
 
 - name: Set up kubeconfig for vagrant user
   become: true
@@ -75,25 +73,11 @@
         conf_dir = "/etc/cni/net.d"
     state: present
 
-# Install Calico on all nodes
-- name: Install Calico CNI plugin
+# Install Flannel CNI on all nodes
+- name: Install Flannel CNI plugin
   become: true
-  command: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  command: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
-
-
-# - name: Wait for Calico pods to be ready
-#   become: true
-#   command: kubectl rollout status daemonset/calico-node -n kube-system
-#   when: inventory_hostname == "kubemaster"
-#   retries: 5
-#   delay: 30
-#   until: result.rc == 0
-#   register: result
-#   notify:
-#     - Restart containerd
-#     - Restart kubelet
-
 
 - name: Restart containerd
   systemd:
