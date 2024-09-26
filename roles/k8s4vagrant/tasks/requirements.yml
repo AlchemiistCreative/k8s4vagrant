@@ -106,8 +106,8 @@
     cmd: |
       containerd config default > /etc/containerd/config.toml
       sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-
   notify: Restart containerd
+
 - name: Ensure containerd service is started
   systemd:
     name: containerd
