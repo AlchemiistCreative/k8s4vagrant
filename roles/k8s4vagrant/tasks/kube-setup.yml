@@ -63,16 +63,6 @@
   command: "{{ hostvars['kubemaster'].join_command_str }}"
   when: inventory_hostname != "kubemaster" and not lock_file_stat.stat.exists
 
-- name: Ensure containerd CNI configuration exists in config.toml
-  lineinfile:
-    path: /etc/containerd/config.toml
-    regexp: '^\s*\[plugins."io.containerd.grpc.v1.cri".cni\]'
-    line: |
-      [plugins."io.containerd.grpc.v1.cri".cni]
-        bin_dir = "/opt/cni/bin"
-        conf_dir = "/etc/cni/net.d"
-    state: present
-
 - name: Download kube-flannel.yml to /tmp
   get_url:
     url: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
