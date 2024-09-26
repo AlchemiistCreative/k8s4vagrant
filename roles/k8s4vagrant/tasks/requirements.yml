@@ -11,6 +11,11 @@
     state: present
     update_cache: yes
 
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  ansible.posix.selinux:
+    policy: targeted
+    state: permissive
+
 - name: Enable IP forwarding
   sysctl:
     name: net.ipv4.ip_forward
@@ -104,3 +109,4 @@
     name: containerd
     enabled: yes
     state: started
+
