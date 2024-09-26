@@ -73,10 +73,22 @@
         conf_dir = "/etc/cni/net.d"
     state: present
 
-# Install Flannel CNI on all nodes
-- name: Install Flannel CNI plugin
+- name: Download kube-flannel.yml to /tmp
+  get_url:
+    url: https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+    dest: /tmp/kube-flannel.yml
+    mode: '0644'
+
+- name: Modify Flannel configuration to use the correct network interface
+  lineinfile:
+    path: /tmp/kube-flannel.yml
+    regexp: '^(.*args:)'
+    insertbefore: '^(\s*)- --kube-subnet-mgr'
+    line: '        - --iface=eth1'
+
+- name: Apply the Flannel CNI plugin
+  command: kubectl apply -f /tmp/kube-flannel.yml
   become: true
-  command: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
 - name: Restart containerd
