@@ -94,16 +94,25 @@
     state: present
     update_cache: yes
 
-- name: Configure containerd to enable CRI plugin
-  lineinfile:
-    path: /etc/containerd/config.toml
-    regexp: '^disabled_plugins'
-    line: '#disabled_plugins = []'
-  notify: Restart containerd
+# - name: Configure containerd to enable CRI plugin
+#   lineinfile:
+#     path: /etc/containerd/config.toml
+#     regexp: '^disabled_plugins'
+#     line: '#disabled_plugins = []'
+#   notify: Restart containerd
+
+- name: get config.toml
+  command: containerd config default > /tmp/config.toml
+
+- name: move config.toml
+  copy:
+    src: /tmp/config.toml
+    dest: /etc/containerd/config.toml
+    mode: '0644'
 
 - name: Set SystemdCgroup to true in containerd config
   lineinfile:
-    path: /etc/containerd/config.toml
+    path: /tmp/config.toml
     regexp: '^SystemdCgroup = false'
     line: 'SystemdCgroup = true'
     state: present
