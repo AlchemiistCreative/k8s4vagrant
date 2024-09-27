@@ -69,12 +69,12 @@
     dest: /tmp/kube-flannel.yml
     mode: '0644'
 
-- name: Modify Flannel configuration to use the correct network interface
-  lineinfile:
-    path: /tmp/kube-flannel.yml
-    regexp: '^(.*args:)'
-    insertbefore: '^(\s*)- --kube-subnet-mgr'
-    line: '        - --iface=eth1'
+# - name: Modify Flannel configuration to use the correct network interface
+#   lineinfile:
+#     path: /tmp/kube-flannel.yml
+#     regexp: '^(.*args:)'
+#     insertbefore: '^(\s*)- --kube-subnet-mgr'
+#     line: '        - --iface=eth1'
 
 - name: Apply the Flannel CNI plugin
   command: kubectl apply -f /tmp/kube-flannel.yml
