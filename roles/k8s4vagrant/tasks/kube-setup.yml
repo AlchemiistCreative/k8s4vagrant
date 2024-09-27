@@ -91,13 +91,12 @@
     name: kubelet
     state: restarted
 
-
 - name: Create LAB dir if it does not exist
   ansible.builtin.file:
     path: /home/vagrant/lab 
     state: directory
     mode: '0755'
-
+  when: inventory_hostname == "kubemaster"
 
 - name: Copy all files
   copy:
