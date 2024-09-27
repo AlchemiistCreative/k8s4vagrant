@@ -39,6 +39,7 @@
    - {port: "30000-32767", proto: "tcp", state: "enabled", zone: "public" }
    - {port: "8472", proto: "udp", state: "enabled", zone: "public" }
    - {port: "8285", proto: "udp", state: "enabled", zone: "public" }
+   - {port: "53", proto: "udp", state: "enabled", zone: "public" }
 
 
 
