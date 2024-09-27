@@ -77,11 +77,11 @@
   command: swapoff -a
   become: true
 
-- name: Remove swap entry from fstab
+- name: Comment out the swap entry in /etc/fstab
   lineinfile:
     path: /etc/fstab
-    regexp: '^/swap'
-    state: absent
+    regexp: '^/dev/mapper/rl_rocky9-swap'
+    state: absent  # To remove the line completely
 
 - name: Add Docker repository
   yum_repository:
