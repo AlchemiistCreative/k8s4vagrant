@@ -90,3 +90,21 @@
   systemd:
     name: kubelet
     state: restarted
+
+
+- name: Create LAB dir if it does not exist
+  ansible.builtin.file:
+    path: /home/vagrant/lab 
+    state: directory
+    mode: '0755'
+
+- name: Copy all files from role's files directory to the host
+  hosts: your_target_host
+  tasks:
+    - name: Copy all files
+      copy:
+        src: "{{ item }}"
+        dest: /home/vagrant/lab 
+      with_fileglob:
+        - "{{ role_path }}/files/*"
+  when: inventory_hostname == "kubemaster"
