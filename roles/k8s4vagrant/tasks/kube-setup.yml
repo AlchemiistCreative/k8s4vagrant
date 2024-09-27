@@ -72,7 +72,7 @@
 - name: Modify Flannel configuration to use the correct network interface
   lineinfile:
     path: /tmp/kube-flannel.yml
-    regexp: '^(.*args:)'
+    regexp: '^(\s*)- --kube-subnet-mgr'
     insertbefore: '^(\s*)- --kube-subnet-mgr'
     line: '        - --iface=eth1'
 
