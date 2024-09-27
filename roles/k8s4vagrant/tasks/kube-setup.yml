@@ -98,13 +98,11 @@
     state: directory
     mode: '0755'
 
-- name: Copy all files from role's files directory to the host
-  hosts: your_target_host
-  tasks:
-    - name: Copy all files
-      copy:
-        src: "{{ item }}"
-        dest: /home/vagrant/lab 
-      with_fileglob:
-        - "{{ role_path }}/files/*"
+
+- name: Copy all files
+  copy:
+    src: "{{ item }}"
+    dest: /home/vagrant/lab 
+  with_fileglob:
+    - "{{ role_path }}/files/*"
   when: inventory_hostname == "kubemaster"
