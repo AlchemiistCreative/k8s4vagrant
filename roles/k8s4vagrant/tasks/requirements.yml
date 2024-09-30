@@ -1,19 +1,10 @@
 - name: Clear YUM cache
   command: yum clean all
 
-- name: Enable PowerTools repository
-  ansible.builtin.yum_repository:
-    name: PowerTools
-    description: CentOS PowerTools
-    baseurl: http://mirror.centos.org/centos/$releasever/PowerTools/$basearch/
-    enabled: yes
-    gpgcheck: no
-
 
 - name: Install dependencies
   yum:
     name:
-      - glibc-static
       - yum-utils
       - ca-certificates
       - curl
