@@ -1,5 +1,5 @@
 - name: Clear YUM cache
-  command: yum clean all
+  command: yum clean all && yum config-manager --enable PowerTools
 
 - name: Install dependencies
   yum:
