@@ -63,6 +63,17 @@
   command: "{{ hostvars['kubemaster'].join_command_str }}"
   when: inventory_hostname != "kubemaster" and not lock_file_stat.stat.exists
 
+
+- name: Add Flannel configuration to subnet.env
+  blockinfile:
+    path: /run/flannel/subnet.env
+    block: |
+      FLANNEL_NETWORK=10.244.0.0/16
+      FLANNEL_SUBNET=10.244.0.1/24
+      FLANNEL_MTU=1450
+      FLANNEL_IPMASQ=true
+    marker: ""
+
 - name: Download kube-flannel.yml to /tmp
   get_url:
     url: https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
