@@ -63,6 +63,11 @@
   command: "{{ hostvars['kubemaster'].join_command_str }}"
   when: inventory_hostname != "kubemaster" and not lock_file_stat.stat.exists
 
+- name: Create Flannel directory
+  file:
+    path: /run/flannel
+    state: directory
+    mode: 0755
 
 - name: Add Flannel configuration to subnet.env
   blockinfile:
