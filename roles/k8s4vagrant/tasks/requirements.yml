@@ -1,5 +1,5 @@
 - name: Clear YUM cache
-  command: yum clean all && yum config-manager --enable powertools
+  command: yum clean all
 
 - name: Enable PowerTools repository
   ansible.builtin.yum_repository:
