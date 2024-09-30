@@ -21,6 +21,7 @@
   sysctl:
     name: net.ipv4.ip_forward
     value: 1
+    sysctl_set: yes
     state: present
     reload: yes
 
@@ -47,23 +48,16 @@
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
 
-- name: Load overlay module
-  ansible.builtin.shell: modprobe overlay
-  become: true
-  ignore_errors: true
+- name: Add netfilter module
+  modprobe:
+    name: br_netfilter
+    state: present
 
-- name: Load br_netfilter module
-  ansible.builtin.shell: modprobe br_netfilter
-  become: true
-  ignore_errors: true
-
-- name: Ensure overlay and br_netfilter modules are loaded on boot
-  ansible.builtin.copy:
-    dest: /etc/modules-load.d/k8s-modules.conf
+- name: Creating a file with content
+  copy:
+    dest: "/etc/modprobe.d/br_netfilter.conf"
     content: |
-      overlay
       br_netfilter
-  become: true
 
 - name: Apply sysctl settings for Kubernetes
   ansible.builtin.sysctl:
