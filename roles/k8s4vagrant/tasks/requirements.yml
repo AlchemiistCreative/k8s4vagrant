@@ -4,6 +4,7 @@
 - name: Install dependencies
   yum:
     name:
+      - libc6
       - yum-utils
       - ca-certificates
       - curl
