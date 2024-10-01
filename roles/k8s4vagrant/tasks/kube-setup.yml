@@ -34,7 +34,7 @@
 
 - name: Initialize Kubernetes with correct network interface
   become: true
-  command: kubeadm init --apiserver-advertise-address={{ correct_ip.stdout }} --pod-network-cidr=192.168.0.0/16  # Use Kube Router CIDR
+  command: kubeadm init --apiserver-advertise-address={{ correct_ip.stdout }} --pod-network-cidr=10.244.0.0/16
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
   register: kubeadm_init
   notify: lockfile
@@ -63,16 +63,48 @@
   command: "{{ hostvars['kubemaster'].join_command_str }}"
   when: inventory_hostname != "kubemaster" and not lock_file_stat.stat.exists
 
-# Remove Flannel-specific tasks
+- name: Ensure Flannel directory exists
+  file:
+    path: /run/flannel
+    state: directory
+    mode: '0755'  # Set the desired permissions
 
-- name: Download kube-router.yaml to /tmp
+- name: Ensure subnet.env file exists
+  file:
+    path: /run/flannel/subnet.env
+    state: touch  # Create the file if it doesn't exist
+    mode: '0644'  # Set desired permissions for the file
+
+- name: Add Flannel configuration to subnet.env
+  blockinfile:
+    path: /run/flannel/subnet.env
+    block: |
+      FLANNEL_NETWORK=10.244.0.0/16
+      FLANNEL_SUBNET=10.244.0.1/24
+      FLANNEL_MTU=1450
+      FLANNEL_IPMASQ=true
+    marker: ""
+
+- name: Download kube-flannel.yml to /tmp
   get_url:
-    url: https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/manifests/kube-router.yaml
-    dest: /tmp/kube-router.yaml
+    url: https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+    dest: /tmp/kube-flannel.yml
     mode: '0644'
 
-- name: Apply the Kube Router CNI plugin
-  command: kubectl apply -f /tmp/kube-router.yaml
+- name: Modify Flannel configuration to use the correct network interface
+  lineinfile:
+    path: /tmp/kube-flannel.yml
+    insertafter: '^(\s*)- --ip-masq'  # Insert after the --ip-masq line
+    line: '        - --iface=eth1'    # Indentation must match the original file
+
+# - name: Replace cbr0 with cni0 in the ConfigMap
+#   replace:
+#     path: /tmp/kube-flannel.yml
+#     regexp: '"name": "cbr0"'
+#     replace: '"name": "cni0"'
+
+- name: Apply the Flannel CNI plugin
+  command: kubectl apply -f /tmp/kube-flannel.yml
   become: true
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
