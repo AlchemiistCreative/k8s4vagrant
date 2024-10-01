@@ -91,11 +91,11 @@
     dest: /tmp/kube-flannel.yml
     mode: '0644'
 
-- name: Modify Flannel configuration to use the correct network interface
-  lineinfile:
-    path: /tmp/kube-flannel.yml
-    insertafter: '^(\s*)- --ip-masq'  # Insert after the --ip-masq line
-    line: '        - --iface=eth1'    # Indentation must match the original file
+# - name: Modify Flannel configuration to use the correct network interface
+#   lineinfile:
+#     path: /tmp/kube-flannel.yml
+#     insertafter: '^(\s*)- --ip-masq'  # Insert after the --ip-masq line
+#     line: '        - --iface=eth1'    # Indentation must match the original file
 
 # - name: Replace cbr0 with cni0 in the ConfigMap
 #   replace:
