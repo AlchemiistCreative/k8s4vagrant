@@ -1,7 +1,6 @@
 - name: Clear YUM cache
   command: yum clean all
 
-
 - name: Install dependencies
   yum:
     name:
@@ -42,8 +41,6 @@
    - {port: "8472", proto: "udp", state: "enabled", zone: "public" }
    - {port: "8285", proto: "udp", state: "enabled", zone: "public" }
    - {port: "53", proto: "udp", state: "enabled", zone: "public" }
-
-
 
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
