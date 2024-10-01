@@ -114,7 +114,7 @@
 
 
 - name: Apply the Calico CNI plugin
-  command: kubectl apply -f /home/vagrant/lab/calico.yml
+  command: kubectl apply -f /home/vagrant/lab/calico.yaml
   become: true
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
