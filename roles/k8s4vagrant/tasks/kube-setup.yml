@@ -85,26 +85,26 @@
       FLANNEL_IPMASQ=true
     marker: ""
 
-- name: Download kube-flannel.yml to /tmp
-  get_url:
-    url: https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
-    dest: /tmp/kube-flannel.yml
-    mode: '0644'
+# - name: Download kube-flannel.yml to /tmp
+#   get_url:
+#     url: https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+#     dest: /tmp/kube-flannel.yml
+#     mode: '0644'
 
-- name: Modify Flannel configuration to use the correct network interface
-  lineinfile:
-    path: /tmp/kube-flannel.yml
-    insertafter: '^(\s*)- --ip-masq'  # Insert after the --ip-masq line
-    line: '        - --iface=eth1'    # Indentation must match the original file
+# - name: Modify Flannel configuration to use the correct network interface
+#   lineinfile:
+#     path: /tmp/kube-flannel.yml
+#     insertafter: '^(\s*)- --ip-masq'  # Insert after the --ip-masq line
+#     line: '        - --iface=eth1'    # Indentation must match the original file
 
-- name: Replace cbr0 with cni0 in the ConfigMap
-  replace:
-    path: /tmp/kube-flannel.yml
-    regexp: '"name": "cbr0"'
-    replace: '"name": "cni0"'
+# - name: Replace cbr0 with cni0 in the ConfigMap
+#   replace:
+#     path: /tmp/kube-flannel.yml
+#     regexp: '"name": "cbr0"'
+#     replace: '"name": "cni0"'
 
 - name: Apply the Flannel CNI plugin
-  command: kubectl apply -f /tmp/kube-flannel.yml
+  command: kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
   become: true
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
