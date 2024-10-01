@@ -97,6 +97,12 @@
     insertafter: '^(\s*)- --ip-masq'  # Insert after the --ip-masq line
     line: '        - --iface=eth1'    # Indentation must match the original file
 
+- name: Replace cbr0 with cni0 in the ConfigMap
+  replace:
+    path: /tmp/kube-flannel-cfg.yaml
+    regexp: '"name": "cbr0"'
+    replace: '"name": "cni0"'
+
 - name: Apply the Flannel CNI plugin
   command: kubectl apply -f /tmp/kube-flannel.yml
   become: true
