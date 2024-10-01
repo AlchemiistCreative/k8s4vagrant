@@ -99,7 +99,7 @@
 
 - name: Replace cbr0 with cni0 in the ConfigMap
   replace:
-    path: /tmp/kube-flannel-cfg.yaml
+    path: /tmp/kube-flannel.yml
     regexp: '"name": "cbr0"'
     replace: '"name": "cni0"'
 
