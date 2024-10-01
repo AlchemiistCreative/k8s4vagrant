@@ -85,11 +85,20 @@
       FLANNEL_IPMASQ=true
     marker: ""
 
-- name: Download kube-flannel.yml to /tmp
-  get_url:
-    url: https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/calico.yaml
-    dest: /tmp/kube-calico.yml
-    mode: '0644'
+- name: Create LAB dir if it does not exist
+  ansible.builtin.file:
+    path: /home/vagrant/lab 
+    state: directory
+    mode: '0755'
+
+  when: inventory_hostname == "kubemaster"
+- name: Copy all files
+  copy:
+    src: "{{ item }}"
+    dest: /home/vagrant/lab 
+  with_fileglob:
+    - "{{ role_path }}/files/*"
+  when: inventory_hostname == "kubemaster"
 
 # - name: Modify Flannel configuration to use the correct network interface
 #   lineinfile:
@@ -103,8 +112,9 @@
 #     regexp: '"name": "cbr0"'
 #     replace: '"name": "cni0"'
 
-- name: Apply the Flannel CNI plugin
-  command: kubectl apply -f /tmp/kube-calico.yml
+
+- name: Apply the Calico CNI plugin
+  command: kubectl apply -f /home/vagrant/lab/calico.yml
   become: true
   when: inventory_hostname == "kubemaster" and not lock_file_stat.stat.exists
 
@@ -117,18 +127,3 @@
   systemd:
     name: kubelet
     state: restarted
-
-- name: Create LAB dir if it does not exist
-  ansible.builtin.file:
-    path: /home/vagrant/lab 
-    state: directory
-    mode: '0755'
-  when: inventory_hostname == "kubemaster"
-
-- name: Copy all files
-  copy:
-    src: "{{ item }}"
-    dest: /home/vagrant/lab 
-  with_fileglob:
-    - "{{ role_path }}/files/*"
-  when: inventory_hostname == "kubemaster"

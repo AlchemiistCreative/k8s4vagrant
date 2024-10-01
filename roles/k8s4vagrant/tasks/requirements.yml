@@ -38,9 +38,12 @@
    - {port: "10259", proto: "tcp", state: "enabled", zone: "public" }
    - {port: "10257", proto: "tcp", state: "enabled", zone: "public" }
    - {port: "30000-32767", proto: "tcp", state: "enabled", zone: "public" }
-   - {port: "8472", proto: "udp", state: "enabled", zone: "public" }
-   - {port: "8285", proto: "udp", state: "enabled", zone: "public" }
+   - {port: "5473", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "4789", proto: "udp", state: "enabled", zone: "public" }
    - {port: "53", proto: "udp", state: "enabled", zone: "public" }
+   - {port: "179", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "443", proto: "tcp", state: "enabled", zone: "public" }
+   - {port: "6443*", proto: "tcp", state: "enabled", zone: "public" }
 
 - name: Reload firewalld to apply changes
   command: firewall-cmd --reload
