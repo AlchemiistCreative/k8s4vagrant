@@ -80,17 +80,6 @@
     chain: POSTROUTING
     jump: MASQUERADE
 
-- name: Save iptables rules
-  shell: "iptables-save > /etc/iptables/rules.v4"
-  args:
-    executable: /bin/bash
-
-- name: Reload iptables rules
-  shell: "iptables-restore < /etc/iptables/rules.v4"
-  args:
-    executable: /bin/bash
-
-
 - name: Add netfilter module
   modprobe:
     name: br_netfilter
