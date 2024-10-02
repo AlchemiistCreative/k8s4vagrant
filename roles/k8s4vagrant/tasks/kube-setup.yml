@@ -88,7 +88,7 @@
 
 - name: Download kube-flannel.yml to /tmp
   get_url:
-    url: https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+    url: https://github.com/flannel-io/flannel/releases/download/v0.24.1/kube-flannel.yml
     dest: /tmp/kube-flannel.yml
     mode: '0644'
 
