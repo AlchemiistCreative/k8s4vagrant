@@ -16,10 +16,76 @@
   ansible.posix.selinux:
     policy: targeted
     state: permissive
-- name: Stop firewalld
-  systemd:
-    name: firewalld
-    state: stopped
+
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+# Firewall rules for Master node
+- name: FirewallD rules for Master
+  firewalld:
+    permanent: yes
+    immediate: yes
+    port: "{{ item.port }}/{{ item.proto }}"
+    state: "{{ item.state }}"
+    zone: "{{ item.zone }}"
+  with_items:
+    - { port: "6443", proto: "tcp", state: "enabled", zone: "public" }  # Kubernetes API server
+    - { port: "2379-2380", proto: "tcp", state: "enabled", zone: "public" }  # etcd server client API
+    - { port: "10250", proto: "tcp", state: "enabled", zone: "public" }  # Kubelet API
+    - { port: "10251", proto: "tcp", state: "enabled", zone: "public" }  # kube-scheduler
+    - { port: "10252", proto: "tcp", state: "enabled", zone: "public" }  # kube-controller-manager
+    - { port: "8285", proto: "udp", state: "enabled", zone: "public" }  # Flannel (UDP encapsulation)
+    - { port: "8472", proto: "udp", state: "enabled", zone: "public" }  # Flannel (VXLAN)
+    - { port: "30000-32767", proto: "tcp", state: "enabled", zone: "public" }  # NodePort range
+    - { port: "4789", proto: "udp", state: "enabled", zone: "public" }  # VXLAN overlay for Flannel
+    - { port: "6444", proto: "tcp", state: "enabled", zone: "public" }  # Optional API services
+  when: inventory_hostname == "kubemaster"
+
+# Firewall rules for Worker nodes
+# - name: FirewallD rules for Worker nodes
+#   firewalld:
+#     permanent: yes
+#     immediate: yes
+#     port: "{{ item.port }}/{{ item.proto }}"
+#     state: "{{ item.state }}"
+#     zone: "{{ item.zone }}"
+#   with_items:
+#     - { port: "10250", proto: "tcp", state: "enabled", zone: "public" }  # Kubelet API
+#     - { port: "8285", proto: "udp", state: "enabled", zone: "public" }  # Flannel (UDP encapsulation)
+#     - { port: "8472", proto: "udp", state: "enabled", zone: "public" }  # Flannel (VXLAN)
+#     - { port: "30000-32767", proto: "tcp", state: "enabled", zone: "public" }  # NodePort range
+#     - { port: "4789", proto: "udp", state: "enabled", zone: "public" }  # VXLAN overlay for Flannel
+#   when: inventory_hostname != "kubemaster"
+
+# # Masquerading rule for both Master and Worker nodes
+# - name: Add masquerading rule to FirewallD
+#   firewalld:
+#     permanent: yes
+#     immediate: yes
+#     masquerade: yes
+#     state: enabled
+#     zone: public
+
+# # Reload FirewallD to apply rules
+# - name: Reload FirewallD
+#   command: firewall-cmd --reload
+
+# # Restart FirewallD service
+# - name: Restart FirewallD service
+#   systemd:
+#     name: firewalld
+#     state: restarted
+#     enabled: yes
+
+# - name: Stop firewalld
+#   systemd:
+#     name: firewalld
+#     state: stopped
 
 - name: Disable firewalld
   systemd:
@@ -30,56 +96,7 @@
   systemd:
     name: firewalld
     masked: yes
-
-- name: Enable IP forwarding
-  sysctl:
-    name: net.ipv4.ip_forward
-    value: 1
-    sysctl_set: yes
-    state: present
-    reload: yes
-
-- name: iptables rules for Master node
-  iptables:
-    chain: INPUT
-    protocol: "{{ item.proto }}"
-    destination_port: "{{ item.port }}"
-    jump: ACCEPT
-  with_items:
-    - { port: "6443", proto: "tcp" }  # Kubernetes API server
-    - { port: "2379:2380", proto: "tcp" }  # etcd server client API
-    - { port: "10250", proto: "tcp" }  # Kubelet API
-    - { port: "10251", proto: "tcp" }  # kube-scheduler
-    - { port: "10252", proto: "tcp" }  # kube-controller-manager
-    - { port: "8285", proto: "udp" }  # Flannel (UDP encapsulation)
-    - { port: "8472", proto: "udp" }  # Flannel (VXLAN)
-    - { port: "30000:32767", proto: "tcp" }  # NodePort range
-    - { port: "4789", proto: "udp" }  # VXLAN overlay for Flannel
-    - { port: "6444", proto: "tcp" }  # Optional API services
-  when: inventory_hostname == "kubemaster"
-
-
-- name: iptables rules for Worker nodes
-  iptables:
-    chain: INPUT
-    protocol: "{{ item.proto }}"
-    destination_port: "{{ item.port }}"
-    jump: ACCEPT
-  with_items:
-    - { port: "10250", proto: "tcp" }  # Kubelet API
-    - { port: "8285", proto: "udp" }  # Flannel (UDP encapsulation)
-    - { port: "8472", proto: "udp" }  # Flannel (VXLAN)
-    - { port: "30000:32767", proto: "tcp" }  # NodePort range
-    - { port: "4789", proto: "udp" }  # VXLAN overlay for Flannel
-  when: inventory_hostname != "kubemaster"
-
-
-- name: Add masquerading rule to iptables
-  iptables:
-    table: nat
-    chain: POSTROUTING
-    jump: MASQUERADE
-
+    
 - name: Add netfilter module
   modprobe:
     name: br_netfilter
