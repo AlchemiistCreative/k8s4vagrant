@@ -22,7 +22,7 @@ spec:
         - name: WORDPRESS_DB_USER
           value: root
         - name: WORDPRESS_DB_PASSWORD
-          value: yourpassword
+          value: wordpress
         - name: WORDPRESS_DB_NAME
           value: wordpress
         ports:
