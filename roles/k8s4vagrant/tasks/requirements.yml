@@ -30,7 +30,7 @@
   systemd:
     name: firewalld
     masked: yes
-    
+
 - name: Enable IP forwarding
   sysctl:
     name: net.ipv4.ip_forward
@@ -58,18 +58,6 @@
     - { port: "6444", proto: "tcp" }  # Optional API services
   when: inventory_hostname == "kubemaster"
 
-- name: Add masquerading rule to iptables
-  iptables:
-    table: nat
-    chain: POSTROUTING
-    jump: MASQUERADE
-
-- name: Save iptables rules
-  command: iptables-save > /etc/iptables/rules.v4
-
-- name: Reload iptables rules
-  command: iptables-restore < /etc/iptables/rules.v4
-
 
 - name: iptables rules for Worker nodes
   iptables:
@@ -84,6 +72,23 @@
     - { port: "30000:32767", proto: "tcp" }  # NodePort range
     - { port: "4789", proto: "udp" }  # VXLAN overlay for Flannel
   when: inventory_hostname != "kubemaster"
+
+
+- name: Add masquerading rule to iptables
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    jump: MASQUERADE
+
+- name: Save iptables rules
+  shell: "iptables-save > /etc/iptables/rules.v4"
+  args:
+    executable: /bin/bash
+
+- name: Reload iptables rules
+  shell: "iptables-restore < /etc/iptables/rules.v4"
+  args:
+    executable: /bin/bash
 
 
 - name: Add netfilter module
