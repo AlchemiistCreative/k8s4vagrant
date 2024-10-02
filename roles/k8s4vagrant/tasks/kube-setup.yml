@@ -79,6 +79,7 @@
   blockinfile:
     path: /run/flannel/subnet.env
     block: |
+      FLANNELD_IFACE=eth1
       FLANNEL_NETWORK=10.244.0.0/16
       FLANNEL_SUBNET=10.244.0.1/24
       FLANNEL_MTU=1450
