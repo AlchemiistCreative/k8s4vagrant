@@ -145,6 +145,10 @@
   args:
     executable: /bin/bash
 
+- name: Reload iptables rules
+  shell: "iptables-restore < /etc/iptables/rules.v4"
+  args:
+    executable: /bin/bash
 
 - name: Add netfilter module
   modprobe:
