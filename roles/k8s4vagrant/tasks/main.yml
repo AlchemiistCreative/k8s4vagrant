@@ -5,3 +5,21 @@
 
 - name: setup
   include_tasks: kube-setup.yml
+
+
+## Workaround
+
+- name: Stop firewalld
+  systemd:
+    name: firewalld
+    state: stopped
+
+- name: Disable firewalld
+  systemd:
+    name: firewalld
+    enabled: no
+
+- name: Mask firewalld (optional, to ensure it can't be started)
+  systemd:
+    name: firewalld
+    masked: yes
