@@ -81,7 +81,16 @@
     name: firewalld
     state: restarted
     enabled: yes
-    
+
+- name: Create iptables dir
+  file:
+    path: /etc/iptables
+    state: directory
+    mode: 0755
+
+- name: Save to iptables
+  command: iptables-save > /etc/iptables/rules.v4  # For IPv4
+
 - name: Add netfilter module
   modprobe:
     name: br_netfilter

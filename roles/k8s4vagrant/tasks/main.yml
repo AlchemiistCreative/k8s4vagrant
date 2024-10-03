@@ -23,3 +23,6 @@
   systemd:
     name: firewalld
     masked: yes
+
+- name: Save to iptables
+  command: iptables-restore < /etc/iptables/rules.v4  # Restore IPv4 rules
