@@ -88,8 +88,10 @@
     state: directory
     mode: 0755
 
-- name: Save to iptables
-  command: iptables-save > /etc/iptables/rules.v4  # For IPv4
+- name: Save iptables rules
+  shell: "iptables-save > /etc/iptables/rules.v4"
+  args:
+    executable: /bin/bash
 
 - name: Add netfilter module
   modprobe:
