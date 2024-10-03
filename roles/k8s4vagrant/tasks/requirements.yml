@@ -97,12 +97,11 @@
     name: firewalld
     masked: yes
     
-
 - name: Apply iptables rules for Kubernetes Master
   iptables:
     chain: INPUT
     protocol: "{{ item.proto }}"
-    dport: "{{ item.port }}"
+    destination_port: "{{ item.port }}"
     jump: ACCEPT
   with_items:
     - { port: "6443", proto: "tcp" }  # Kubernetes API server
@@ -120,7 +119,7 @@
   iptables:
     chain: INPUT
     protocol: "{{ item.proto }}"
-    dport: "{{ item.port }}"
+    destination_port: "{{ item.port }}"
     jump: ACCEPT
   with_items:
     - { port: "10250", proto: "tcp" }  # Kubelet API
